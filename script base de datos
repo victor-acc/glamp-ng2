@@ -1,0 +1,321 @@
+create database Glamping_Addventures
+
+use Glamping_Addventures
+
+create table Roles (
+	IDRol int primary key identity(1,1) not null,
+	Nombre varchar(50) null,
+	Estado bit null,
+	IsActive bit not null
+);
+
+create table TokenRecuperacion (
+	Id int primary key identity(1,1) not null,
+	Token VARCHAR(max) null,
+	FechaExpiracion datetime not null,
+	Usado bit not null
+);
+
+CREATE TABLE Clientes (
+NroDocumento varchar(50) primary key,
+    Nombre VARCHAR(50),
+    Apellido VARCHAR(50),
+    Direccion VARCHAR(50),
+    Email VARCHAR(50),
+    Telefono VARCHAR(50),
+    Estado Bit,
+    IDRol INT,
+    CONSTRAINT FK_Clientes_Roles FOREIGN KEY (IDRol) REFERENCES Roles(IDRol)
+);
+
+create table Permisos (
+	IDPermiso int primary key identity(1,1) not null,
+	NombrePermisos varchar(50) null, 
+	EstadoPermisos varchar(50) null, 
+	Descripcion varchar(50) null,
+	IsActive bit not null
+);
+
+create table RolesPermisos (
+	IDRolPermiso int primary key identity(1,1) not null,
+	IDRol int null,
+	IDPermiso int null,
+	foreign key (IDRol) references Roles(IDRol),
+	foreign key (IDPermiso) references Permisos(IDPermiso)
+);
+
+create table Usuarios (
+
+	IDUsuario int primary key identity(1,1) not null,
+	NombreUsuario varchar(50) null,
+	Email varchar(50) null,
+	TipoDocumento varchar(50) null,
+	NumeroDocumento int null,
+	Telefono varchar(50) null,
+	Direccion varchar(50) null, 
+	Pais varchar(50) null, 
+	Cuidad varchar(50) null,
+	IDRol int null,
+    Contrasena varchar(256),
+	Apellido varchar(50),
+	
+	Estado bit,
+
+	foreign key (IDRol) references Roles(IDRol)
+
+);
+
+CREATE TABLE Muebles (
+    IDMueble INT PRIMARY KEY IDENTITY(1,1),
+    NombreMueble VARCHAR(30),
+    ImagenMueble VARBINARY(MAX),
+    CantidadDisponible INT NOT NULL CHECK (CantidadDisponible >= 0),
+    Valor float,
+	Estado Bit,
+);
+-- Tabla TipodeHabitacion
+CREATE TABLE TipodeHabitacion (
+    IDTipodeHabitacion INT PRIMARY KEY IDENTITY(1,1),
+    NombreTipodeHabitacion VARCHAR(30),
+    Descripcion VARCHAR(50),
+	Estado Bit
+);
+CREATE TABLE Habitacion (
+    IDHabitacion INT PRIMARY KEY IDENTITY(1,1),
+    NombreHabitacion VARCHAR(30),
+    ImagenHabitacion VARBINARY(MAX),
+    Descripcion VARCHAR(50),
+    Costo float,
+    IDTipodeHabitacion INT,
+    CantidadPersona INT,
+	Estado Bit,
+    CONSTRAINT FK_Habitacion_TipodeHabitacion FOREIGN KEY (IDTipodeHabitacion) REFERENCES TipodeHabitacion(IDTipodeHabitacion)
+);
+CREATE TABLE HabitacionMuebles (
+    IDHabitacionMuebles INT PRIMARY KEY IDENTITY(1,1),
+    IDHabitacion INT,
+    IDMueble INT,
+	CantidadUsada INT NOT NULL CHECK (CantidadUsada >= 0),
+    CONSTRAINT FK_HabitacionMuebles_Habitacion FOREIGN KEY (IDHabitacion) REFERENCES Habitacion(IDHabitacion),
+    CONSTRAINT FK_HabitacionMuebles_Muebles FOREIGN KEY (IDMueble) REFERENCES Muebles(IDMueble)
+	)
+
+CREATE TABLE Servicios (
+    IDServicio INT PRIMARY KEY IDENTITY(1,1),
+    NombreServicio VARCHAR(30),
+    Descripcion VARCHAR(50),
+    Duracion VARCHAR(50),
+    CantidadMaximaPersonas INT,
+	Costo float,
+	Estado Bit
+);
+
+create table MetodoPago(
+	IdMetodoPago int primary key identity(1,1),
+	NomMetodoPago varchar(20)
+);
+
+create table EstadosReserva(
+	IdEstadoReserva int primary key identity(1,1),
+	NombreEstadoReserva varchar(15)
+);
+
+create table Reserva(
+	IdReserva int primary key identity(1,1),
+	NroDocumentoCliente varchar(50),
+	FechaReserva datetime,
+	FechaInicio date,
+	FechaFinalizacion date,
+	SubTotal float,
+	Descuento float,
+	IVA float,
+	MontoTotal float,
+	MetodoPago int,
+	IdEstadoReserva int,
+
+	foreign key (NroDocumentoCliente) references Clientes(NroDocumento),
+	
+	foreign key (IdEstadoReserva) references EstadosReserva(IdEstadoReserva),
+	foreign key (MetodoPago) references MetodoPago(IdMetodoPago)
+);
+
+-- Tabla Abono
+CREATE TABLE Abono (
+    IDAbono INT PRIMARY KEY IDENTITY(1,1),
+    IDReserva INT,
+    FechaAbono DATE,
+	ValorDeuda float,
+	Porcentaje float,
+	Pendiente float,
+ 
+    CantAbono float,
+	Comprobante VARBINARY(MAX), 
+    Estado Bit,
+    CONSTRAINT FK_Abono_Reserva FOREIGN KEY (IDReserva) REFERENCES Reserva(IDReserva)
+);
+
+-- Tabla DetalleReservaServicio
+CREATE TABLE DetalleReservaServicio (
+    IDDetalleReservaServicio INT PRIMARY KEY IDENTITY(1,1),
+    IDReserva INT,
+    Cantidad INT,
+    Precio float,
+    Estado Bit,
+    IDServicio INT,
+    CONSTRAINT FK_DetalleReservaServicio_Reserva FOREIGN KEY (IDReserva) REFERENCES Reserva(IDReserva),
+    CONSTRAINT FK_DetalleReservaServicio_Servicio FOREIGN KEY (IDServicio) REFERENCES Servicios(IDServicio)
+);
+CREATE TABLE Paquetes (
+    IDPaquete INT PRIMARY KEY IDENTITY(1,1),
+    NombrePaquete VARCHAR(30),
+	ImagenPaquete VARBINARY(MAX),
+	Descripcion VARCHAR(max),
+	IDHabitacion INT,
+	IDServicio INT, 
+    Precio float,
+    Estado Bit,
+	CONSTRAINT FK_Servicio_Paquetes FOREIGN KEY (IDServicio) REFERENCES Servicios(IDServicio),
+	CONSTRAINT FK_Habitacione_Paquetes FOREIGN KEY (IDHabitacion) REFERENCES Habitacion(IDHabitacion),
+
+);
+-- Tabla DetalleReservaPaquetes
+CREATE TABLE DetalleReservaPaquetes (
+    IDDetalleReservaPaquetes INT PRIMARY KEY IDENTITY(1,1),
+    IDReserva INT,
+    Cantidad INT,
+    Precio float,
+    Estado Bit,
+    IDPaquete INT,
+    CONSTRAINT FK_DetalleReservaPaquetes_Reserva FOREIGN KEY (IDReserva) REFERENCES Reserva(IDReserva),
+    CONSTRAINT FK_DetalleReservaPaquetes_Paquete FOREIGN KEY (IDPaquete) REFERENCES Paquetes(IDPaquete)
+);
+
+ALTER TABLE Roles
+ADD CONSTRAINT DF_IsActive DEFAULT 1 FOR IsActive;
+ALTER TABLE Permisos
+ADD CONSTRAINT EF_IsActive DEFAULT 1 FOR IsActive;
+
+insert into Roles(Nombre, IsActive)
+values ('Administrador',1),
+       ('Recepcionista',1)
+
+insert into Permisos(NombrePermisos)
+values ('Dashboard'),
+	   ('Listar Roles'),
+	   ('Buscar Roles'),
+	   ('Crear Roles'),
+	   ('Ver Detalles Roles'),
+	   ('Editar Roles'),
+	   ('Cambiar Estado Roles'),
+	   ('Listar Usuarios'),
+	   ('Buscar Usuarios'),
+	   ('Crear Usuarios'),
+	   ('Ver Detalles Usuarios'),
+	   ('Editar Usuarios'),
+	   ('Cambiar Estado Usuarios'),
+	   ('Listar Clientes'),
+	   ('Buscar Clientes'),
+	   ('Crear Clientes'),
+	   ('Ver Detalles Clientes'),
+	   ('Editar Clientes'),
+	   ('Cambiar Estado Clientes'),
+	   ('Listar Habitaciones'),
+	   ('Buscar Habitaciones'),
+	   ('Crear Habitaciones'),
+	   ('Ver Detalles Habitaciones'),
+	   ('Editar Habitaciones'),
+	   ('Cambiar Estado Habitaciones'),
+	   ('Listar Tipo Habitaciones'),
+	   ('Buscar Tipo Habitaciones'),
+	   ('Crear Tipo Habitaciones'),
+	   ('Editar Tipo Habitaciones'),
+	   ('Cambiar Estado Tipo Habitaciones'),
+	   ('Listar Servicios'),
+	   ('Buscar Servicios'),
+	   ('Crear Servicios'),
+	   ('Ver Detalles Servicios'),
+	   ('Editar Servicios'),
+	   ('Cambiar Estado Servicios'),
+	   ('Listar Tipo Servicio'),
+	   ('Buscar Tipo Servicios'),
+	   ('Crear Tipo Servicios'),
+	   ('Editar Tipo Servicios'),
+	   ('Listar Paquetes'),
+	   ('Buscar Paquetes'),
+	   ('Crear Paquetes'),
+	   ('Ver Detalles Paquetes'),
+	   ('Editar Paquetes'),
+	   ('Cambiar Estado Paquetes'),
+	   ('Listar Reservas'),
+	   ('Buscar Reservas'),
+	   ('Crear Reservas'),
+	   ('Ver Detalles Reservas'),
+	   ('Editar Reservas'),
+	   ('Cambiar Estado Reservas'),
+	   ('Anular Reserva'),
+	   ('Listar Abono'),
+	   ('Buscar Abono'),
+	   ('Crear Abono'),
+	   ('Ver Detalle Abono'),
+	   ('Anular Abono')
+
+
+insert into RolesPermisos(IDRol,IDPermiso)
+values	(1,1),
+		(1,2),
+		(1,3),
+		(1,4),
+		(1,5),
+		(1,6),
+		(1,7),
+		(1,8),
+		(1,9),
+		(1,10),
+		(1,11),
+		(1,12),
+		(1,13),
+		(1,14),
+		(1,15),
+		(1,16),
+		(1,17),
+		(1,18),
+		(1,19),
+		(1,20),
+		(1,21),
+		(1,22),
+		(1,23),
+		(1,24),
+		(1,25),
+		(1,26),
+		(1,27),
+		(1,28),
+		(1,29),
+		(1,30),
+		(1,31),
+		(1,32),
+		(1,33),
+		(1,34),
+		(1,35),
+		(1,36),
+		(1,37),
+		(1,38),
+		(1,39),
+		(1,40),
+		(1,41),
+		(1,42),
+		(1,43),
+		(1,44),
+		(1,45),
+		(1,46),
+		(1,47),
+		(1,48),
+		(1,49),
+		(1,50),
+		(1,51),
+		(1,52),
+		(1,53),
+		(1,54),
+		(1,55),
+		(1,56),
+		(1,57),
+		(1,58)
