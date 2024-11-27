@@ -1,0 +1,96 @@
+﻿namespace Glamping_Addventure.wwwroot.css
+{
+    public class reserva
+{
+    .form-row
+
+{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 300px; /* Ajusta según sea necesario */
+}
+
+.container {
+    position: relative;
+    border: 2px solid black;
+    padding: 20px;
+    width: 800px;
+    margin: 20px;
+}
+
+    .container::before {
+        content: 'Servicios'; /* Texto que aparece en la etiqueta */
+        position: absolute;
+        top: -15px;
+        left: 10px;
+        background-color: white; /* Fondo de la etiqueta */
+        padding: 0 10px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+    }
+
+.container1 {
+    text-align: center;
+    position: relative;
+    border: 2px solid black;
+    padding: 20px;
+    width: 800px;
+    margin: 20px;
+}
+
+    .container1::before {
+        content: 'Paquetes'; /* Texto que aparece en la etiqueta */
+        position: absolute;
+        top: -15px;
+        left: 10px;
+        background-color: white; /* Fondo de la etiqueta */
+        padding: 0 10px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+    }
+
+.container2 {
+    position: relative;
+    border: 2px solid black;
+    padding: 20px;
+    width: 800px;
+    margin: 20px;
+}
+
+    .container2::before {
+        content: 'Infomracion cliente'; /* Texto que aparece en la etiqueta */
+        position: absolute;
+        top: -15px;
+        left: 10px;
+        background-color: white; /* Fondo de la etiqueta */
+        padding: 0 10px;
+        font-weight: bold;
+        font-family: Arial, sans-serif;
+    }
+
+.container3 {
+    position: relative;
+    border: 2px solid black;
+    padding: 20px;
+    width: 800px;
+    margin: 20px;
+}
+
+.container4::before {
+    content: 'Informacion General'; /* Texto que aparece en la etiqueta */
+    position: absolute;
+    top: -15px;
+    left: 10px;
+    background-color: white; /* Fondo de la etiqueta */
+    padding: 0 10px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+}
+    }
+}
