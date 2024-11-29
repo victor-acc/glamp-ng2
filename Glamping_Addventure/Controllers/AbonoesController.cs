@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,9 +95,6 @@ namespace Glamping_Addventure.Controllers
             return Json(new { success = false });
         }
 
-        // POST: Abonoes/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Idabono,Idreserva,FechaAbono,ValorDeuda,Porcentaje,Pendiente,CantAbono,Estado")] Abono abono, IFormFile comprobante)
@@ -113,13 +110,15 @@ namespace Glamping_Addventure.Controllers
                 return View(abono);
             }
 
-            // Calcular total de abonos previos
-            var totalAbonosPrevios = reserva.Abonos.Sum(a => a.CantAbono);
+            // Calcular total de abonos previos, excluyendo los anulados
+            var totalAbonosPrevios = reserva.Abonos
+                .Where(a => !a.Estado) // Excluir abonos en estado "Anulado"
+                .Sum(a => a.CantAbono);
 
-            // Calcular pendiente
+            // Calcular pendiente actual
             abono.Pendiente = reserva.MontoTotal - totalAbonosPrevios;
 
-            // Calcular porcentaje del abono actual
+            // Calcular porcentaje del abono actual sobre el monto total de la reserva
             abono.Porcentaje = (abono.CantAbono / reserva.MontoTotal) * 100;
 
             // Validaciones
@@ -141,7 +140,7 @@ namespace Glamping_Addventure.Controllers
                     using (var memoryStream = new MemoryStream())
                     {
                         await comprobante.CopyToAsync(memoryStream);
-                        abono.Comprobante = memoryStream.ToArray(); // Convierte la imagen en binario.
+                        abono.Comprobante = memoryStream.ToArray(); // Convertir la imagen a binario
                     }
                 }
 
@@ -149,7 +148,7 @@ namespace Glamping_Addventure.Controllers
                 _context.Add(abono);
                 await _context.SaveChangesAsync();
 
-                // Redirige al índice de abonos para la reserva específica.
+                // Redirige al índice de abonos para la reserva específica
                 return RedirectToAction(nameof(Index), new { idReserva = abono.Idreserva });
             }
 
@@ -159,6 +158,7 @@ namespace Glamping_Addventure.Controllers
 
             return View(abono);
         }
+
 
 
         public IActionResult GenerarPDF(int id)
