@@ -1,4 +1,4 @@
-﻿@model Glamping_Addventure.Models.Reserva
+@model Glamping_Addventure.Models.Reserva
 
 @{
     ViewData["Title"] = "Create";
@@ -12,14 +12,13 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" asp-controller="Reservas" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="container2">
                 <div class="form-row">
                     <div class="form-group">
                         <label asp-for="NroDocumentoCliente" class="control-label"></label>
-                        <input asp-for="NroDocumentoCliente" class="form-control" asp-items="ViewBag.NroDocumentoCliente" required></input>
-                    </div>
+                        <input asp-for="NroDocumentoCliente" class="form-control" asp-items="ViewBag.NroDocumentoCliente" required></input> 
                     <div class="form-group">
                         <label for="NombreCliente">Nombre:</label>
                         <input type="text" id="NombreCliente" name="NombreCliente" class="form-control" readonly />
@@ -34,7 +33,7 @@
                     </div>
                     <div class="form-group">
                         <label for="CorreoCliente">Correo:</label>
-                        <input type="text" id="CorreoCliente" name="CorreoCliente" class="form-control" readonly />
+                        <input type="text" id="CorreoCliente" name="CorreoCliente" class="form-control" readonly hidden />
                     </div>
                 </div>
             </div>
@@ -58,7 +57,6 @@
                     </div>
                 </div>
             </div>
-
             <div class="container1">
                 <div class="form-row">
                     <div class="form-group">
@@ -121,6 +119,7 @@
                     </table>
                 </div>
             </div>
+            <input type="hidden" id="detalleServicios" name="detalleServicios">
 
             <div class="form-row">
                 <div class="form-group">
@@ -204,9 +203,10 @@
             }
         });
     </script>
- 
+
     <script>
         $(document).ready(function () {
+            // Función para actualizar los totales
             function actualizarTotales() {
                 let precioPaquete = parseFloat($('#precioPaquete').val()) || 0;
                 let subtotalServicios = 0;
@@ -234,6 +234,24 @@
                 $('#MontoTotal').val(Math.floor(montoTotal)); // Eliminar decimales
             }
 
+            // Función para actualizar el campo oculto con los servicios seleccionados
+            function actualizarCampoDetalleServicios() {
+                let servicios = [];
+
+                $('#tablaServicios tbody tr').each(function () {
+                    let servicio = {
+                        IdServicio: $(this).data('id-servicio'),
+                        Cantidad: parseInt($(this).find('.cantidad').val()) || 1,
+                        Precio: parseFloat($(this).find('td:nth-child(2)').text().replace('$', '')) || 0,
+                        Subtotal: parseFloat($(this).find('.subtotal').text().replace('$', '')) || 0
+                    };
+                    servicios.push(servicio);
+                });
+
+                // Convertir los datos a JSON y asignarlos al campo oculto
+                $('#detalleServicios').val(JSON.stringify(servicios));
+            }
+
             // Mostrar el precio del paquete seleccionado
             $('#paquete').change(function () {
                 let precioPaquete = parseFloat($(this).find(':selected').data('precio')) || 0;
@@ -254,14 +272,14 @@
 
                     // Crear una nueva fila en la tabla
                     let nuevaFila = `
-                        <tr data-id-servicio="${idServicio}">
-                            <td>${nombreServicio}</td>
-                            <td>$${precioServicio}</td>
-                            <td><input type="number" class="form-control cantidad" value="${cantidad}" min="1" style="width: 70px;"></td>
-                            <td class="subtotal">$${subtotal}</td>
-                            <td><button type="button" class="btn btn-danger btn-sm eliminarServicio">Eliminar</button></td>
-                        </tr>
-                    `;
+                            <tr data-id-servicio="${idServicio}">
+                                <td>${nombreServicio}</td>
+                                <td>$${precioServicio}</td>
+                                <td><input type="number" class="form-control cantidad" value="${cantidad}" min="1" style="width: 70px;"></td>
+                                <td class="subtotal">$${subtotal}</td>
+                                <td><button type="button" class="btn btn-danger btn-sm eliminarServicio">Eliminar</button></td>
+                            </tr>
+                        `;
 
                     $('#tablaServicios tbody').append(nuevaFila);
 
@@ -269,10 +287,11 @@
                     selectedService.remove();
 
                     actualizarTotales();
+                    actualizarCampoDetalleServicios(); // Actualizar campo oculto
                 }
             });
 
-            // Actualizar totales al cambiar la cantidad
+            // Actualizar totales y campo oculto al cambiar la cantidad
             $('#tablaServicios').on('change', '.cantidad', function () {
                 let fila = $(this).closest('tr');
                 let precio = parseFloat(fila.find('td:nth-child(2)').text().replace('$', '')) || 0;
@@ -281,6 +300,7 @@
 
                 fila.find('.subtotal').text('$' + subtotal);
                 actualizarTotales();
+                actualizarCampoDetalleServicios(); // Actualizar campo oculto
             });
 
             // Eliminar servicio de la tabla y devolverlo al select
@@ -297,14 +317,15 @@
                 fila.remove();
 
                 actualizarTotales();
+                actualizarCampoDetalleServicios(); // Actualizar campo oculto
             });
 
             // Inicializar cálculo al cargar la página
             $('#paquete').change();
         });
-
-
     </script>
+
+
     <script>
         document.getElementById("NroDocumentoCliente").addEventListener("blur", function () {
             var documento = this.value;
