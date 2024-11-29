@@ -1,4 +1,4 @@
-﻿@model Glamping_Addventure.Models.Reserva
+@model Glamping_Addventure.Models.Reserva
 
 @{
     ViewData["Title"] = "Details";
@@ -11,6 +11,24 @@
     <h4>Reserva</h4>
     <hr />
     <dl class="row">
+       
+        <dt class="col-sm-2">
+                @Html.DisplayNameFor(model => model.NroDocumentoCliente)
+        </dt>
+        <dd class="col-sm-10">
+                @Html.DisplayFor(model => model.NroDocumentoClienteNavigation.NroDocumento)
+        </dd>
+        <dt class="col-sm-2">Nombre</dt>
+        <dd class="col-sm-10" id="NombreCliente"></dd>
+
+        <dt class="col-sm-2">Apellido</dt>
+        <dd class="col-sm-10" id="ApellidoCliente"></dd>
+
+        <dt class="col-sm-2">Teléfono</dt>
+        <dd class="col-sm-10" id="TelefonoCliente"></dd>
+        
+        <dt class="col-sm-2" hidden>correo</dt>
+        <dd class="col-sm-10" hidden id="CorreoCliente"></dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.FechaReserva)
         </dt>
@@ -29,6 +47,49 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.FechaFinalizacion)
         </dd>
+
+        <h4>Paquetes </h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre del Paquete</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var paquete in Model.DetalleReservaPaquetes)
+                {
+                    <tr>
+                        <td>@paquete.IdpaqueteNavigation.NombrePaquete</td>
+                        <td>@paquete.Precio</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <h4>Servicios</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nombre del Servicio</th>
+                    <th>Costo</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var servicio in Model.DetalleReservaServicios)
+                {
+                    var total = servicio.Precio * servicio.Cantidad;
+                      <!-- Calcular total -->
+                    <tr>
+                        <td>@servicio.IdservicioNavigation.NombreServicio</td>
+                        <td>@servicio.Precio</td>
+                        <td>@servicio.Cantidad</td>
+                        <td>@total</td> <!-- Mostrar el total calculado -->
+                    </tr>
+                }
+            </tbody>
+        </table>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.SubTotal)
         </dt>
@@ -57,23 +118,49 @@
             @Html.DisplayNameFor(model => model.IdEstadoReservaNavigation)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IdEstadoReservaNavigation.IdEstadoReserva)
+            @Html.DisplayFor(model => model.IdEstadoReservaNavigation.NombreEstadoReserva)
+        </dd>
+            @Html.DisplayFor(model => model.MetodoPagoNavigation.NomMetodoPago)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.MetodoPagoNavigation)
+            @Html.DisplayNameFor(model => model.MetodoPago)
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.MetodoPagoNavigation.IdMetodoPago)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.NroDocumentoClienteNavigation)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.NroDocumentoClienteNavigation.NroDocumento)
-        </dd>
+        
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.IdReserva">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Edit" asp-route-id="@Model?.IdReserva">Editar</a> |
+    <a asp-action="Index">volver atras</a>
 </div>
+@section Scripts {
+    <script>
+        document.getElementById("NroDocumentoCliente").addEventListener("blur", function () {
+            var documento = this.value;
+
+            if (documento) {
+                // Ajusta la URL según tu configuración de rutas
+                fetch(`/Reservas/ObtenerClientePorDocumento?documento=${encodeURIComponent(documento)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Llena los campos con la información del cliente
+                            document.getElementById("NombreCliente").value = data.data.nombre;
+                            document.getElementById("ApellidoCliente").value = data.data.apellido;
+                            document.getElementById("CorreoCliente").value = data.data.correo; // Corregido el nombre del campo
+                            document.getElementById("TelefonoCliente").value = data.data.telefono;
+                        } else {
+                            // Muestra el modal si el cliente no existe
+                            $('#clienteNoExisteModal').modal('show');
+
+                            // Limpia los campos si no se encuentra el cliente
+                            document.getElementById("NombreCliente").value = "";
+                            document.getElementById("ApellidoCliente").value = "";
+                            document.getElementById("CorreoCliente").value = "";
+                            document.getElementById("TelefonoCliente").value = "";
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            }
+        });
+    </script>
+}
