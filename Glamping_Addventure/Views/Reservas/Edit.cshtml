@@ -155,4 +155,68 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+<script>
+        $(document).ready(function () {
+             // Agregar servicios a la tabla y eliminarlos de la lista
+            $('#agregarServicio').click(function () {
+                let selectedService = $('#servicio option:selected');
+                let nombreServicio = selectedService.text();
+                let precioServicio = parseFloat(selectedService.data('precio')) || 0;
+                let idServicio = selectedService.val();
+                let cantidad = 1;
+
+                if (nombreServicio && precioServicio) {
+                    let subtotal = precioServicio * cantidad;
+
+                    // Crear una nueva fila en la tabla
+                    let nuevaFila = `
+                            <tr data-id-servicio="${idServicio}">
+                                <td>${nombreServicio}</td>
+                                <td>$${precioServicio}</td>
+                                <td><input type="number" class="form-control cantidad" value="${cantidad}" min="1" style="width: 70px;"></td>
+                                <td class="subtotal">$${subtotal}</td>
+                                <td><button type="button" class="btn btn-danger btn-sm eliminarServicio">Eliminar</button></td>
+                            </tr>
+                        `;
+
+                    $('#tablaServicios tbody').append(nuevaFila);
+
+                    // Eliminar el servicio del select
+                    selectedService.remove();
+
+                    actualizarTotales();
+                    actualizarCampoDetalleServicios(); // Actualizar campo oculto
+                }
+            });
+
+            // Actualizar totales y campo oculto al cambiar la cantidad
+            $('#tablaServicios').on('change', '.cantidad', function () {
+                let fila = $(this).closest('tr');
+                let precio = parseFloat(fila.find('td:nth-child(2)').text().replace('$', '')) || 0;
+                let cantidad = parseInt($(this).val()) || 1;
+                let subtotal = precio * cantidad;
+
+                fila.find('.subtotal').text('$' + subtotal);
+                actualizarTotales();
+                actualizarCampoDetalleServicios(); // Actualizar campo oculto
+            });
+
+             // Eliminar servicio de la tabla y devolverlo al select
+            $('#tablaServicios').on('click', '.eliminarServicio', function () {
+                let fila = $(this).closest('tr');
+                let idServicio = fila.data('id-servicio');
+                let nombreServicio = fila.find('td:nth-child(1)').text();
+                let precioServicio = parseFloat(fila.find('td:nth-child(2)').text().replace('$', ''));
+
+                // Agregar de nuevo el servicio al select
+                $('#servicio').append(<option value="${idServicio}" data-precio="${precioServicio}">${nombreServicio}</option>);
+
+                // Eliminar la fila
+                fila.remove();
+
+                actualizarTotales();
+                actualizarCampoDetalleServicios(); // Actualizar campo oculto
+            });
+        });
+    </script>
 }
